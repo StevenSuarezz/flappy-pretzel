@@ -1,0 +1,6 @@
+game
+CMakeCache.txt
+CMakeFiles/
+.DS_Store
+Makefile
+cmake_install.cmake
