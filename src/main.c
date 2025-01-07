@@ -6,10 +6,22 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
+struct playerStruct {
+  SDL_Surface *playerSurface;
+  SDL_Texture *playerTexture;
+  SDL_Rect *positionRect;
+  float vel_y;
+};
+
+void freePlayerResources(struct playerStruct *player) {
+  SDL_FreeSurface(player->playerSurface);
+  SDL_DestroyTexture(player->playerTexture);
+}
+
 int main(int argc, char *args[]) {
   SDL_Window *window = NULL;
   SDL_Renderer *renderer = NULL;
-  SDL_Surface *pretzelSurface = NULL;
+  struct playerStruct player = {0};
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("could not initialize sdl2: %s\n", SDL_GetError());
@@ -30,16 +42,14 @@ int main(int argc, char *args[]) {
   }
 
   // Initialize the surface for the player character
-  pretzelSurface = IMG_Load("./images/pretzel.png");
-  if (pretzelSurface == NULL) {
+  player.playerSurface = IMG_Load("./images/pretzel.png");
+  if (player.playerSurface == NULL) {
     printf("Awww shit, here we go again: %s\n", IMG_GetError());
     return 1;
   }
 
-  SDL_Texture *pretzelTexture =
-      SDL_CreateTextureFromSurface(renderer, pretzelSurface);
-
-  SDL_FreeSurface(pretzelSurface);
+  player.playerTexture =
+      SDL_CreateTextureFromSurface(renderer, player.playerSurface);
 
   // Main game loop
   SDL_Event event;
@@ -47,7 +57,7 @@ int main(int argc, char *args[]) {
   while (gameIsRunning) {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, pretzelTexture, NULL, NULL);
+    SDL_RenderCopy(renderer, player.playerTexture, NULL, NULL);
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         gameIsRunning = false;
@@ -56,7 +66,7 @@ int main(int argc, char *args[]) {
     SDL_RenderPresent(renderer);
   }
 
-  SDL_DestroyTexture(pretzelTexture);
+  freePlayerResources(&player);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
