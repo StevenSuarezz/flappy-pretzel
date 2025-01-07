@@ -1,12 +1,17 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_timer.h>
 #include <stdbool.h>
 #include <stdio.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-#define GRAVITY 9.81
+#define FPS 60
+#define GRAVITY 9.81f
+
+const int FRAME_DELAY = 1000 / FPS;
+const float JUMP_FORCE = -5.0f;
 
 struct playerStruct {
   SDL_Surface *playerSurface;
@@ -75,19 +80,47 @@ int main(int argc, char *args[]) {
     return -1;
   }
 
-  // Main game loop
+  Uint64 lastTime = SDL_GetTicks64();
+  Uint64 frameStart;
+  int frameTime;
+
   SDL_Event event;
   bool gameIsRunning = true;
+
+  // Main game loop
   while (gameIsRunning) {
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, player.playerTexture, NULL, &player.positionRect);
+    // Input Phase
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         gameIsRunning = false;
       }
+      if (event.type == SDL_KEYDOWN) {
+        switch (event.key.keysym.sym) {
+        case SDLK_SPACE:
+          player.vel_y = JUMP_FORCE;
+          break;
+        }
+      }
     }
+
+    // Update Phase
+    frameStart = SDL_GetTicks64();
+    double deltaTime = (frameStart - lastTime) / 1000.0f;
+    lastTime = frameStart;
+
+    player.vel_y += GRAVITY * deltaTime;
+    player.positionRect.y += player.vel_y;
+
+    // Render Phase
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, player.playerTexture, NULL, &player.positionRect);
     SDL_RenderPresent(renderer);
+
+    frameTime = SDL_GetTicks64() - frameStart;
+    if (frameTime < FRAME_DELAY) {
+      SDL_Delay(FRAME_DELAY - frameTime);
+    }
   }
 
   freePlayerResources(&player);
