@@ -11,7 +11,8 @@
 #define GRAVITY 9.81f
 
 const int FRAME_DELAY = 1000 / FPS;
-const float JUMP_FORCE = -5.0f;
+const float JUMP_FORCE = -8.0f;
+const float FALL_MULTIPLIER = 1.5f;
 
 struct playerStruct {
   SDL_Surface *playerSurface;
@@ -55,6 +56,8 @@ int initPlayerStruct(struct playerStruct *player, SDL_Renderer *renderer) {
 int main(int argc, char *args[]) {
   SDL_Window *window = NULL;
   SDL_Renderer *renderer = NULL;
+  SDL_Surface *backgroundSurface;
+  SDL_Texture *backgroundTexture;
   struct playerStruct player = {0};
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -74,6 +77,14 @@ int main(int argc, char *args[]) {
     printf("Could not create renderer: %s\n", SDL_GetError());
     return -1;
   }
+
+  backgroundSurface = IMG_Load("./images/background.png");
+  if (backgroundSurface == NULL) {
+    printf("Awww diddly-doo, here we embark anew: %s\n", IMG_GetError());
+    return -1;
+  }
+
+  backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
 
   if (initPlayerStruct(&player, renderer) < 0) {
     printf("Error initializing player struct\n");
@@ -96,6 +107,9 @@ int main(int argc, char *args[]) {
       }
       if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.sym) {
+        case SDLK_ESCAPE:
+          gameIsRunning = false;
+          break;
         case SDLK_SPACE:
           player.vel_y = JUMP_FORCE;
           break;
@@ -107,13 +121,15 @@ int main(int argc, char *args[]) {
     frameStart = SDL_GetTicks64();
     double deltaTime = (frameStart - lastTime) / 1000.0f;
     lastTime = frameStart;
+    printf("DELTA TIME: %f\n", deltaTime);
 
-    player.vel_y += GRAVITY * deltaTime;
+    player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
     player.positionRect.y += player.vel_y;
 
     // Render Phase
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
     SDL_RenderCopy(renderer, player.playerTexture, NULL, &player.positionRect);
     SDL_RenderPresent(renderer);
 
