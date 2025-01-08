@@ -20,8 +20,9 @@ struct playerStruct {
   float vel_y;
 };
 
-void freePlayerResources(struct playerStruct *player) {
+void freeTextures(struct playerStruct *player, SDL_Texture *backgroundTexture) {
   SDL_DestroyTexture(player->playerTexture);
+  SDL_DestroyTexture(backgroundTexture);
 }
 
 int initPlayerStruct(struct playerStruct *player, SDL_Renderer *renderer) {
@@ -147,7 +148,7 @@ int main(int argc, char *args[]) {
     }
   }
 
-  freePlayerResources(&player);
+  freeTextures(&player, backgroundTexture);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
