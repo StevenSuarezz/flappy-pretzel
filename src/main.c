@@ -12,37 +12,19 @@
 
 const int FRAME_DELAY = 1000 / FPS;
 const float JUMP_FORCE = -8.0f;
-const float FALL_MULTIPLIER = 1.5f;
+const float FALL_MULTIPLIER = 1.75f;
 
 struct playerStruct {
-  SDL_Surface *playerSurface;
   SDL_Texture *playerTexture;
   SDL_Rect positionRect;
   float vel_y;
 };
 
 void freePlayerResources(struct playerStruct *player) {
-  SDL_FreeSurface(player->playerSurface);
   SDL_DestroyTexture(player->playerTexture);
 }
 
 int initPlayerStruct(struct playerStruct *player, SDL_Renderer *renderer) {
-  // Initialize the surface for the player character
-  player->playerSurface = IMG_Load("./images/pretzel.png");
-  if (player->playerSurface == NULL) {
-    printf("Awww shit, here we go again: %s\n", IMG_GetError());
-    return -1;
-  }
-
-  // Use that surface to create the player texture
-  player->playerTexture =
-      SDL_CreateTextureFromSurface(renderer, player->playerSurface);
-
-  if (player->playerSurface == NULL) {
-    printf("Aww shite, here we go again: %s\n", SDL_GetError());
-    return -1;
-  }
-
   player->positionRect.x = SCREEN_WIDTH / 3 - 50;
   player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
   player->positionRect.w = 128;
@@ -53,10 +35,38 @@ int initPlayerStruct(struct playerStruct *player, SDL_Renderer *renderer) {
   return 0;
 }
 
+// TODO: Add pipes
+
+// Load assets into surfaces and create textures from those surfaces
+int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture,
+                     SDL_Texture **backgroundTexture) {
+  // Player
+  SDL_Surface *playerSurface = IMG_Load("./images/pretzel.png");
+  if (playerSurface == NULL) {
+    printf("Error loading player surface: %s\n", IMG_GetError());
+    return -1;
+  }
+
+  *playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
+  SDL_FreeSurface(playerSurface);
+
+  // Background
+  SDL_Surface *backgroundSurface = IMG_Load("./images/background.png");
+  if (backgroundSurface == NULL) {
+    printf("Error loading background surface: %s\n", IMG_GetError());
+    return -1;
+  }
+
+  *backgroundTexture =
+      SDL_CreateTextureFromSurface(renderer, backgroundSurface);
+  SDL_FreeSurface(backgroundSurface);
+
+  return 0;
+}
+
 int main(int argc, char *args[]) {
   SDL_Window *window = NULL;
   SDL_Renderer *renderer = NULL;
-  SDL_Surface *backgroundSurface;
   SDL_Texture *backgroundTexture;
   struct playerStruct player = {0};
 
@@ -78,13 +88,11 @@ int main(int argc, char *args[]) {
     return -1;
   }
 
-  backgroundSurface = IMG_Load("./images/background.png");
-  if (backgroundSurface == NULL) {
-    printf("Awww diddly-doo, here we embark anew: %s\n", IMG_GetError());
+  if (initGameTextures(renderer, &player.playerTexture, &backgroundTexture) <
+      0) {
+    printf("Error initializing game textures\n");
     return -1;
-  }
-
-  backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
+  };
 
   if (initPlayerStruct(&player, renderer) < 0) {
     printf("Error initializing player struct\n");
