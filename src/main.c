@@ -20,27 +20,55 @@ struct playerStruct {
   float vel_y;
 };
 
+struct pipeStruct {
+  SDL_Texture *pipeTexture;
+  SDL_Rect topPositionRect;
+  SDL_Rect bottomPositionRect;
+  int gap;
+};
+
 void freeTextures(struct playerStruct *player, SDL_Texture *backgroundTexture) {
   SDL_DestroyTexture(player->playerTexture);
   SDL_DestroyTexture(backgroundTexture);
 }
 
-int initPlayerStruct(struct playerStruct *player, SDL_Renderer *renderer) {
-  player->positionRect.x = SCREEN_WIDTH / 3 - 50;
+int initPlayerStruct(struct playerStruct *player) {
+  player->positionRect.x = SCREEN_WIDTH / 3 - 70;
   player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
-  player->positionRect.w = 128;
-  player->positionRect.h = 128;
+  player->positionRect.w = 64;
+  player->positionRect.h = 64;
 
   player->vel_y = 0.0f;
 
   return 0;
 }
 
+int initPipeStruct(struct pipeStruct *pipe1) {
+  pipe1->gap = rand() % 100;
+
+  int top_min = -128;
+  int top_max = -10;
+  int top_y = rand() % (top_max - top_min + 1) +
+              top_min; // -128 is highest Y we want, -10 is lowest
+
+  int bot_y = top_y + pipe1->gap + 256;
+
+  pipe1->topPositionRect.x = SCREEN_WIDTH / 2 + 50;
+  pipe1->topPositionRect.y = top_y;
+  pipe1->topPositionRect.w = 128;
+  pipe1->topPositionRect.h = 256;
+
+  pipe1->bottomPositionRect.x = pipe1->topPositionRect.x;
+  pipe1->bottomPositionRect.y = bot_y; // 384 is lowest Y we want
+  pipe1->bottomPositionRect.w = 128;
+  pipe1->bottomPositionRect.h = 256;
+}
 // TODO: Add pipes
 
 // Load assets into surfaces and create textures from those surfaces
 int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture,
-                     SDL_Texture **backgroundTexture) {
+                     SDL_Texture **backgroundTexture,
+                     SDL_Texture **pipeTexture) {
   // Player
   SDL_Surface *playerSurface = IMG_Load("./images/pretzel.png");
   if (playerSurface == NULL) {
@@ -62,6 +90,16 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture,
       SDL_CreateTextureFromSurface(renderer, backgroundSurface);
   SDL_FreeSurface(backgroundSurface);
 
+  // Pipes
+  SDL_Surface *pipeSurface = IMG_Load("./images/bone.png");
+  if (pipeSurface == NULL) {
+    printf("Error loading pipe surface: %s\n", IMG_GetError());
+    return -1;
+  }
+
+  *pipeTexture = SDL_CreateTextureFromSurface(renderer, pipeSurface);
+  SDL_FreeSurface(pipeSurface);
+
   return 0;
 }
 
@@ -70,6 +108,9 @@ int main(int argc, char *args[]) {
   SDL_Renderer *renderer = NULL;
   SDL_Texture *backgroundTexture;
   struct playerStruct player = {0};
+  struct pipeStruct pipe1 = {0};
+
+  srand(time(NULL));
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("could not initialize sdl2: %s\n", SDL_GetError());
@@ -89,14 +130,19 @@ int main(int argc, char *args[]) {
     return -1;
   }
 
-  if (initGameTextures(renderer, &player.playerTexture, &backgroundTexture) <
-      0) {
+  if (initGameTextures(renderer, &player.playerTexture, &backgroundTexture,
+                       &pipe1.pipeTexture) < 0) {
     printf("Error initializing game textures\n");
     return -1;
   };
 
-  if (initPlayerStruct(&player, renderer) < 0) {
+  if (initPlayerStruct(&player) < 0) {
     printf("Error initializing player struct\n");
+    return -1;
+  }
+
+  if (initPipeStruct(&pipe1) < 0) {
+    printf("Error initializing pipe structs\n");
     return -1;
   }
 
@@ -130,7 +176,7 @@ int main(int argc, char *args[]) {
     frameStart = SDL_GetTicks64();
     double deltaTime = (frameStart - lastTime) / 1000.0f;
     lastTime = frameStart;
-    printf("DELTA TIME: %f\n", deltaTime);
+    // printf("DELTA TIME: %f\n", deltaTime);
 
     player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
     player.positionRect.y += player.vel_y;
@@ -140,6 +186,9 @@ int main(int argc, char *args[]) {
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
     SDL_RenderCopy(renderer, player.playerTexture, NULL, &player.positionRect);
+    SDL_RenderCopy(renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect);
+    SDL_RenderCopy(renderer, pipe1.pipeTexture, NULL,
+                   &pipe1.bottomPositionRect);
     SDL_RenderPresent(renderer);
 
     frameTime = SDL_GetTicks64() - frameStart;
