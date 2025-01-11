@@ -46,7 +46,7 @@ void initPlayerStruct(struct playerStruct *player) {
 	player->vel_y = 0.0f;
 }
 
-void initPipeStruct(struct pipeStruct *pipe1) {
+void setPipeOffScreen(struct pipeStruct *pipe1, int x_offset) {
 	// Create a gap of at least 100px and add a random amount to it clamped to
 	// 64px
 	pipe1->gap = (rand() % 64) + 100;
@@ -58,7 +58,7 @@ void initPipeStruct(struct pipeStruct *pipe1) {
 
 	int bot_y = top_y + SCREEN_HEIGHT + pipe1->gap;
 
-	pipe1->topPositionRect.x = SCREEN_WIDTH;
+	pipe1->topPositionRect.x = SCREEN_WIDTH + x_offset;
 	pipe1->topPositionRect.y = top_y;
 	pipe1->topPositionRect.w = PIPE_WIDTH;
 	pipe1->topPositionRect.h = SCREEN_HEIGHT;
@@ -69,8 +69,24 @@ void initPipeStruct(struct pipeStruct *pipe1) {
 	pipe1->bottomPositionRect.h = SCREEN_HEIGHT;
 }
 
+void updatePipeStructs(struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
+	pipe1->topPositionRect.x = pipe1->topPositionRect.x - PIPE_SPEED;
+	pipe1->bottomPositionRect.x = pipe1->topPositionRect.x;
+	pipe2->topPositionRect.x = pipe2->topPositionRect.x - PIPE_SPEED;
+	pipe2->bottomPositionRect.x = pipe2->topPositionRect.x;
+
+	// Check if pipe is off of screen
+	if (pipe1->topPositionRect.x < -PIPE_WIDTH) {
+		printf("PIPE TRIGGERED\n");
+		setPipeOffScreen(pipe1, 0);
+	} else if (pipe2->topPositionRect.x < -PIPE_WIDTH) {
+		printf("DEBUG: Pipe2 is off the screen... resetting\n");
+		setPipeOffScreen(pipe2, 0);
+	}
+}
+
 // Load assets into surfaces and create textures from those surfaces
-int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Texture **backgroundTexture, SDL_Texture **pipeTexture) {
+int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Texture **backgroundTexture, SDL_Texture **pipe1Texture, SDL_Texture **pipe2Texture) {
 	// Player
 	SDL_Surface *playerSurface = IMG_Load("../images/pretzel.png");
 	if (playerSurface == NULL) {
@@ -98,7 +114,8 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 		return -1;
 	}
 
-	*pipeTexture = SDL_CreateTextureFromSurface(renderer, pipeSurface);
+	*pipe1Texture = SDL_CreateTextureFromSurface(renderer, pipeSurface);
+	*pipe2Texture = SDL_CreateTextureFromSurface(renderer, pipeSurface);
 	SDL_FreeSurface(pipeSurface);
 
 	return 0;
@@ -110,6 +127,7 @@ int main(int argc, char *args[]) {
 	SDL_Texture *backgroundTexture;
 	struct playerStruct player = {0};
 	struct pipeStruct pipe1 = {0};
+	struct pipeStruct pipe2 = {0};
 
 	float pipeVel = 0.5f;
 
@@ -131,7 +149,7 @@ int main(int argc, char *args[]) {
 		return -1;
 	}
 
-	if (initGameTextures(renderer, &player.playerTexture, &backgroundTexture, &pipe1.pipeTexture) < 0) {
+	if (initGameTextures(renderer, &player.playerTexture, &backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
 		printf("Error initializing game textures\n");
 		printf("Are you running game from the build dir as stated in the README instructions?\n");
 		return -1;
@@ -139,7 +157,8 @@ int main(int argc, char *args[]) {
 
 	initPlayerStruct(&player);
 
-	initPipeStruct(&pipe1);
+	setPipeOffScreen(&pipe1, 0);
+	setPipeOffScreen(&pipe2, 350);
 
 	Uint64 lastTime = SDL_GetTicks64();
 	Uint64 frameStart;
@@ -152,7 +171,7 @@ int main(int argc, char *args[]) {
 
 	// Main game loop
 	while (gameIsRunning) {
-		// Input Phase
+		// ============= Input Phase
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT) {
 				gameIsRunning = false;
@@ -169,11 +188,11 @@ int main(int argc, char *args[]) {
 			}
 		}
 
-		// Update Phase
+		// ============= Update Phase
 		frameStart = SDL_GetTicks64();
 		double deltaTime = (frameStart - lastTime) / 1000.0f;
 		lastTime = frameStart;
-		printf("DELTA TIME: %f\n", deltaTime);
+		// printf("DELTA TIME: %f\n", deltaTime);
 
 		// Update player
 		player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
@@ -181,21 +200,24 @@ int main(int argc, char *args[]) {
 		playerAngle = player.vel_y * PLAYER_ANGLE_MULTIPLIER;
 
 		// Update pipes
-		pipe1.topPositionRect.x = pipe1.topPositionRect.x - PIPE_SPEED;
-		pipe1.bottomPositionRect.x = pipe1.topPositionRect.x;
+		updatePipeStructs(&pipe1, &pipe2);
 
-		if (pipe1.topPositionRect.x < -PIPE_WIDTH) {
-			printf("PIPE TRIGGERED\n");
-			initPipeStruct(&pipe1);
-		}
-
-		// Render Phase
+		// ============ Render Phase
+		// Render background
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+
+		// Render player
 		SDL_RenderCopyEx(renderer, player.playerTexture, NULL, &player.positionRect, playerAngle, NULL, SDL_FLIP_NONE);
+
+		// Render pipes
 		SDL_RenderCopyEx(renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
 		SDL_RenderCopy(renderer, pipe1.pipeTexture, NULL, &pipe1.bottomPositionRect);
+
+		SDL_RenderCopyEx(renderer, pipe2.pipeTexture, NULL, &pipe2.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
+		SDL_RenderCopy(renderer, pipe2.pipeTexture, NULL, &pipe2.bottomPositionRect);
+
 		SDL_RenderPresent(renderer);
 
 		frameTime = SDL_GetTicks64() - frameStart;
