@@ -15,7 +15,7 @@ const int FRAME_DELAY = 1000 / FPS;
 const float JUMP_FORCE = -8.0f;
 const float FALL_MULTIPLIER = 1.75f;
 const float PLAYER_ANGLE_MULTIPLIER = 3.5f;
-const float PIPE_SPEED = 2.5f;
+const int PIPE_SPEED = 3;
 const int PIPE_WIDTH = 100;
 
 struct playerStruct {
@@ -77,7 +77,7 @@ void updatePipeStructs(struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
 
 	// Check if pipe is off of screen
 	if (pipe1->topPositionRect.x < -PIPE_WIDTH) {
-		printf("PIPE TRIGGERED\n");
+		printf("DEBUG: Pipe1 is off the screen... resetting\n");
 		setPipeOffScreen(pipe1, 0);
 	} else if (pipe2->topPositionRect.x < -PIPE_WIDTH) {
 		printf("DEBUG: Pipe2 is off the screen... resetting\n");
@@ -125,6 +125,7 @@ int main(int argc, char *args[]) {
 	SDL_Window *window = NULL;
 	SDL_Renderer *renderer = NULL;
 	SDL_Texture *backgroundTexture;
+
 	struct playerStruct player = {0};
 	struct pipeStruct pipe1 = {0};
 	struct pipeStruct pipe2 = {0};
