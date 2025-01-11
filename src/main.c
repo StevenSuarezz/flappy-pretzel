@@ -3,6 +3,7 @@
 #include <SDL2/SDL_timer.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <time.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -34,18 +35,16 @@ void freeTextures(struct playerStruct *player, SDL_Texture *backgroundTexture) {
   SDL_DestroyTexture(backgroundTexture);
 }
 
-int initPlayerStruct(struct playerStruct *player) {
+void initPlayerStruct(struct playerStruct *player) {
   player->positionRect.x = SCREEN_WIDTH / 3 - 70;
   player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
   player->positionRect.w = 84;
   player->positionRect.h = 84;
 
   player->vel_y = 0.0f;
-
-  return 0;
 }
 
-int initPipeStruct(struct pipeStruct *pipe1) {
+void initPipeStruct(struct pipeStruct *pipe1) {
   // Create a gap of at least 100px and add a random amount to it clamped to
   // 64px
   pipe1->gap = (rand() % 64) + 100;
@@ -139,17 +138,11 @@ int main(int argc, char *args[]) {
                        &pipe1.pipeTexture) < 0) {
     printf("Error initializing game textures\n");
     return -1;
-  };
-
-  if (initPlayerStruct(&player) < 0) {
-    printf("Error initializing player struct\n");
-    return -1;
   }
 
-  if (initPipeStruct(&pipe1) < 0) {
-    printf("Error initializing pipe structs\n");
-    return -1;
-  }
+  initPlayerStruct(&player);
+
+  initPipeStruct(&pipe1);
 
   Uint64 lastTime = SDL_GetTicks64();
   Uint64 frameStart;
