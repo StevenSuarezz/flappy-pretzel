@@ -13,6 +13,8 @@
 const int FRAME_DELAY = 1000 / FPS;
 const float JUMP_FORCE = -8.0f;
 const float FALL_MULTIPLIER = 1.75f;
+const float PIPE_SPEED = 2.5f;
+const int PIPE_WIDTH = 100;
 
 struct playerStruct {
   SDL_Texture *playerTexture;
@@ -35,8 +37,8 @@ void freeTextures(struct playerStruct *player, SDL_Texture *backgroundTexture) {
 int initPlayerStruct(struct playerStruct *player) {
   player->positionRect.x = SCREEN_WIDTH / 3 - 70;
   player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
-  player->positionRect.w = 64;
-  player->positionRect.h = 64;
+  player->positionRect.w = 84;
+  player->positionRect.h = 84;
 
   player->vel_y = 0.0f;
 
@@ -55,14 +57,14 @@ int initPipeStruct(struct pipeStruct *pipe1) {
 
   int bot_y = top_y + SCREEN_HEIGHT + pipe1->gap;
 
-  pipe1->topPositionRect.x = SCREEN_WIDTH / 2 + 50;
+  pipe1->topPositionRect.x = SCREEN_WIDTH;
   pipe1->topPositionRect.y = top_y;
-  pipe1->topPositionRect.w = 100;
+  pipe1->topPositionRect.w = PIPE_WIDTH;
   pipe1->topPositionRect.h = SCREEN_HEIGHT;
 
   pipe1->bottomPositionRect.x = pipe1->topPositionRect.x;
   pipe1->bottomPositionRect.y = bot_y;
-  pipe1->bottomPositionRect.w = 100;
+  pipe1->bottomPositionRect.w = PIPE_WIDTH;
   pipe1->bottomPositionRect.h = SCREEN_HEIGHT;
 }
 
@@ -191,6 +193,13 @@ int main(int argc, char *args[]) {
                              // player angle multiplier
 
     // Update pipes
+    pipe1.topPositionRect.x = pipe1.topPositionRect.x - PIPE_SPEED;
+    pipe1.bottomPositionRect.x = pipe1.topPositionRect.x;
+
+    if (pipe1.topPositionRect.x < -PIPE_WIDTH) {
+      printf("PIPE TRIGGERED\n");
+      initPipeStruct(&pipe1);
+    }
 
     // Render Phase
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
