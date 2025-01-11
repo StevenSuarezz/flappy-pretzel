@@ -44,26 +44,27 @@ int initPlayerStruct(struct playerStruct *player) {
 }
 
 int initPipeStruct(struct pipeStruct *pipe1) {
-  pipe1->gap = rand() % 100;
+  // Create a gap of at least 100px and add a random amount to it clamped to
+  // 64px
+  pipe1->gap = (rand() % 64) + 100;
 
-  int top_min = -128;
-  int top_max = -10;
-  int top_y = rand() % (top_max - top_min + 1) +
-              top_min; // -128 is highest Y we want, -10 is lowest
+  // Recall that SCREEN_HEIGHT = 480
+  int top_min = -440;
+  int top_max = -164;
+  int top_y = rand() % (top_max - top_min + 1) + top_min;
 
-  int bot_y = top_y + pipe1->gap + 256;
+  int bot_y = top_y + SCREEN_HEIGHT + pipe1->gap;
 
   pipe1->topPositionRect.x = SCREEN_WIDTH / 2 + 50;
   pipe1->topPositionRect.y = top_y;
-  pipe1->topPositionRect.w = 128;
-  pipe1->topPositionRect.h = 256;
+  pipe1->topPositionRect.w = 100;
+  pipe1->topPositionRect.h = SCREEN_HEIGHT;
 
   pipe1->bottomPositionRect.x = pipe1->topPositionRect.x;
-  pipe1->bottomPositionRect.y = bot_y; // 384 is lowest Y we want
-  pipe1->bottomPositionRect.w = 128;
-  pipe1->bottomPositionRect.h = 256;
+  pipe1->bottomPositionRect.y = bot_y;
+  pipe1->bottomPositionRect.w = 100;
+  pipe1->bottomPositionRect.h = SCREEN_HEIGHT;
 }
-// TODO: Add pipes
 
 // Load assets into surfaces and create textures from those surfaces
 int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture,
@@ -91,7 +92,7 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture,
   SDL_FreeSurface(backgroundSurface);
 
   // Pipes
-  SDL_Surface *pipeSurface = IMG_Load("./images/bone.png");
+  SDL_Surface *pipeSurface = IMG_Load("./images/pipe.png");
   if (pipeSurface == NULL) {
     printf("Error loading pipe surface: %s\n", IMG_GetError());
     return -1;
@@ -186,7 +187,8 @@ int main(int argc, char *args[]) {
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
     SDL_RenderCopy(renderer, player.playerTexture, NULL, &player.positionRect);
-    SDL_RenderCopy(renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect);
+    SDL_RenderCopyEx(renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect,
+                     0.0f, NULL, SDL_FLIP_VERTICAL);
     SDL_RenderCopy(renderer, pipe1.pipeTexture, NULL,
                    &pipe1.bottomPositionRect);
     SDL_RenderPresent(renderer);
