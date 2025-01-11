@@ -111,6 +111,8 @@ int main(int argc, char *args[]) {
   struct playerStruct player = {0};
   struct pipeStruct pipe1 = {0};
 
+  float pipeVel = 0.5f;
+
   srand(time(NULL));
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -154,6 +156,8 @@ int main(int argc, char *args[]) {
   SDL_Event event;
   bool gameIsRunning = true;
 
+  double playerAngle = 0.0f;
+
   // Main game loop
   while (gameIsRunning) {
     // Input Phase
@@ -179,14 +183,21 @@ int main(int argc, char *args[]) {
     lastTime = frameStart;
     // printf("DELTA TIME: %f\n", deltaTime);
 
+    // Update player
     player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
     player.positionRect.y += player.vel_y;
+    playerAngle =
+        player.vel_y * 3.5f; // TODO: Make this a variable representing the
+                             // player angle multiplier
+
+    // Update pipes
 
     // Render Phase
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
-    SDL_RenderCopy(renderer, player.playerTexture, NULL, &player.positionRect);
+    SDL_RenderCopyEx(renderer, player.playerTexture, NULL, &player.positionRect,
+                     playerAngle, NULL, SDL_FLIP_NONE);
     SDL_RenderCopyEx(renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect,
                      0.0f, NULL, SDL_FLIP_VERTICAL);
     SDL_RenderCopy(renderer, pipe1.pipeTexture, NULL,
