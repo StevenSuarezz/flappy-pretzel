@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_rect.h>
+#include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -12,7 +14,7 @@
 #define GRAVITY 9.81f
 
 const int FRAME_DELAY = 1000 / FPS;
-const float JUMP_FORCE = -8.0f;
+const float JUMP_FORCE = -7.0f;
 const float FALL_MULTIPLIER = 1.75f;
 const float PLAYER_ANGLE_MULTIPLIER = 3.5f;
 const int PIPE_SPEED = 3;
@@ -40,8 +42,8 @@ void freeTextures(struct playerStruct *player, SDL_Texture *backgroundTexture) {
 void initPlayerStruct(struct playerStruct *player) {
 	player->positionRect.x = SCREEN_WIDTH / 3 - 70;
 	player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
-	player->positionRect.w = 84;
-	player->positionRect.h = 84;
+	player->positionRect.w = 320 / 5;
+	player->positionRect.h = 196 / 5;
 
 	player->vel_y = 0.0f;
 }
@@ -121,6 +123,22 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 	return 0;
 }
 
+void detectCollision(struct playerStruct *player, struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
+	if (SDL_HasIntersection(&player->positionRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe1->bottomPositionRect)) {
+		printf("COLLISION WITH PIPE 1 HOLY SHIT\n");
+	} else if (SDL_HasIntersection(&player->positionRect, &pipe2->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe2->bottomPositionRect)) {
+		printf("COLLISION WITH PIPE 2 HOLY SHIT\n");
+	}
+}
+
+void drawDebugRects(SDL_Renderer *renderer, struct playerStruct *player, struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
+	SDL_RenderDrawRect(renderer, &player->positionRect);
+	SDL_RenderDrawRect(renderer, &pipe1->topPositionRect);
+	SDL_RenderDrawRect(renderer, &pipe1->bottomPositionRect);
+	SDL_RenderDrawRect(renderer, &pipe2->topPositionRect);
+	SDL_RenderDrawRect(renderer, &pipe2->bottomPositionRect);
+}
+
 int main(int argc, char *args[]) {
 	SDL_Window *window = NULL;
 	SDL_Renderer *renderer = NULL;
@@ -190,6 +208,7 @@ int main(int argc, char *args[]) {
 		}
 
 		// ============= Update Phase
+		detectCollision(&player, &pipe1, &pipe2);
 		frameStart = SDL_GetTicks64();
 		double deltaTime = (frameStart - lastTime) / 1000.0f;
 		lastTime = frameStart;
@@ -218,6 +237,8 @@ int main(int argc, char *args[]) {
 
 		SDL_RenderCopyEx(renderer, pipe2.pipeTexture, NULL, &pipe2.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
 		SDL_RenderCopy(renderer, pipe2.pipeTexture, NULL, &pipe2.bottomPositionRect);
+
+		drawDebugRects(renderer, &player, &pipe1, &pipe2);
 
 		SDL_RenderPresent(renderer);
 
