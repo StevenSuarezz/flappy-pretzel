@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
@@ -90,7 +91,7 @@ void updatePipeStructs(struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
 // Load assets into surfaces and create textures from those surfaces
 int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Texture **backgroundTexture, SDL_Texture **pipe1Texture, SDL_Texture **pipe2Texture) {
 	// Player
-	SDL_Surface *playerSurface = IMG_Load("../images/pretzel.png");
+	SDL_Surface *playerSurface = IMG_Load("../assets/images/pretzel.png");
 	if (playerSurface == NULL) {
 		printf("Error loading player surface: %s\n", IMG_GetError());
 		return -1;
@@ -100,7 +101,7 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 	SDL_FreeSurface(playerSurface);
 
 	// Background
-	SDL_Surface *backgroundSurface = IMG_Load("../images/background.png");
+	SDL_Surface *backgroundSurface = IMG_Load("../assets/images/background.png");
 	if (backgroundSurface == NULL) {
 		printf("Error loading background surface: %s\n", IMG_GetError());
 		return -1;
@@ -110,7 +111,7 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 	SDL_FreeSurface(backgroundSurface);
 
 	// Pipes
-	SDL_Surface *pipeSurface = IMG_Load("../images/pipe.png");
+	SDL_Surface *pipeSurface = IMG_Load("../assets/images/pipe.png");
 	if (pipeSurface == NULL) {
 		printf("Error loading pipe surface: %s\n", IMG_GetError());
 		return -1;
@@ -152,6 +153,8 @@ int main(int argc, char *args[]) {
 
 	srand(time(NULL));
 
+	Mix_Music *gameMusic = NULL;
+
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("could not initialize sdl2: %s\n", SDL_GetError());
 		return -1;
@@ -171,6 +174,27 @@ int main(int argc, char *args[]) {
 	if (initGameTextures(renderer, &player.playerTexture, &backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
 		printf("Error initializing game textures\n");
 		printf("Are you running game from the build dir as stated in the README instructions?\n");
+		return -1;
+	}
+
+	if (Mix_Init(MIX_INIT_MP3) < 0) {
+		printf("Could not initialize SDL mixer: %s\n", Mix_GetError());
+		return -1;
+	}
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+		return -1;
+	}
+
+	gameMusic = Mix_LoadMUS("../assets/sound/main-music.MP3");
+	if (gameMusic == NULL) {
+		printf("Failed to load background music: %s\n", Mix_GetError());
+		return -1;
+	}
+
+	if (Mix_PlayMusic(gameMusic, 99999) < 0) {
+		printf("Failed to start playing background music: %s\n", Mix_GetError());
 		return -1;
 	}
 
@@ -249,6 +273,7 @@ int main(int argc, char *args[]) {
 	}
 
 	freeTextures(&player, backgroundTexture);
+	Mix_FreeMusic(gameMusic);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
