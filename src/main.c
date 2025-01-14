@@ -21,6 +21,8 @@ const float PLAYER_ANGLE_MULTIPLIER = 3.5f;
 const int PIPE_SPEED = 3;
 const int PIPE_WIDTH = 100;
 
+const int BACKGROUND_VOLUME_LEVEL = 10;
+
 struct playerStruct {
 	SDL_Texture *playerTexture;
 	SDL_Rect positionRect;
@@ -124,12 +126,16 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 	return 0;
 }
 
-void detectCollision(struct playerStruct *player, struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
+// TODO: First function that is a bool - lets either make all other functions a bool or make it return an int classic c style
+bool detectCollision(struct playerStruct *player, struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
 	if (SDL_HasIntersection(&player->positionRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe1->bottomPositionRect)) {
 		printf("COLLISION WITH PIPE 1 HOLY SHIT\n");
+		return true;
 	} else if (SDL_HasIntersection(&player->positionRect, &pipe2->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe2->bottomPositionRect)) {
 		printf("COLLISION WITH PIPE 2 HOLY SHIT\n");
+		return true;
 	}
+	return false;
 }
 
 void drawDebugRects(SDL_Renderer *renderer, struct playerStruct *player, struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
@@ -154,6 +160,10 @@ int main(int argc, char *args[]) {
 	srand(time(NULL));
 
 	Mix_Music *gameMusic = NULL;
+	Mix_Chunk *pretzelSFX1 = NULL;
+	Mix_Chunk *pretzelSFX2 = NULL;
+	Mix_Chunk *pretzelSFX3 = NULL;
+	Mix_Chunk *pretzelSFX4 = NULL;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("could not initialize sdl2: %s\n", SDL_GetError());
@@ -187,13 +197,24 @@ int main(int argc, char *args[]) {
 		return -1;
 	}
 
-	gameMusic = Mix_LoadMUS("../assets/sound/main-music.MP3");
+	gameMusic = Mix_LoadMUS("../assets/sound/main-music.mp3");
 	if (gameMusic == NULL) {
 		printf("Failed to load background music: %s\n", Mix_GetError());
 		return -1;
 	}
 
-	if (Mix_PlayMusic(gameMusic, 99999) < 0) {
+	pretzelSFX1 = Mix_LoadWAV("../assets/sound/pretzel1.mp3");
+	if (pretzelSFX1 == NULL) {
+		printf("Failed to load pretzelSFX1: %s\n", Mix_GetError());
+		return -1;
+	}
+
+	if (Mix_VolumeMusic(BACKGROUND_VOLUME_LEVEL) < 0) {
+		printf("Failed to reduce music: %s\n", Mix_GetError());
+		return -1;
+	}
+
+	if (Mix_PlayMusic(gameMusic, -1) < 0) {
 		printf("Failed to start playing background music: %s\n", Mix_GetError());
 		return -1;
 	}
@@ -244,7 +265,9 @@ int main(int argc, char *args[]) {
 		// printf("DELTA TIME: %f\n", deltaTime);
 
 		if (!gameIsPaused) {
-			detectCollision(&player, &pipe1, &pipe2);
+			if (detectCollision(&player, &pipe1, &pipe2) && Mix_Playing(0) == 0) {
+				Mix_PlayChannel(0, pretzelSFX1, 0);
+			}
 			// Update player
 			player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
 			printf("Player velocity: %f\n", player.vel_y);
@@ -283,6 +306,7 @@ int main(int argc, char *args[]) {
 
 	freeTextures(&player, backgroundTexture);
 	Mix_FreeMusic(gameMusic);
+	Mix_FreeChunk(pretzelSFX1);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
