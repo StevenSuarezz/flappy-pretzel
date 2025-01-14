@@ -209,6 +209,7 @@ int main(int argc, char *args[]) {
 
 	SDL_Event event;
 	bool gameIsRunning = true;
+	bool gameIsPaused = false;
 
 	double playerAngle = 0.0f;
 
@@ -227,24 +228,32 @@ int main(int argc, char *args[]) {
 				case SDLK_SPACE:
 					player.vel_y = JUMP_FORCE;
 					break;
+
+				case SDLK_p:
+					gameIsPaused = !gameIsPaused;
+					// Optional: gameIsPaused ? Mix_PauseMusic() : Mix_ResumeMusic();
+					break;
 				}
 			}
 		}
 
 		// ============= Update Phase
-		detectCollision(&player, &pipe1, &pipe2);
 		frameStart = SDL_GetTicks64();
 		double deltaTime = (frameStart - lastTime) / 1000.0f;
 		lastTime = frameStart;
 		// printf("DELTA TIME: %f\n", deltaTime);
 
-		// Update player
-		player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
-		player.positionRect.y += player.vel_y;
-		playerAngle = player.vel_y * PLAYER_ANGLE_MULTIPLIER;
+		if (!gameIsPaused) {
+			detectCollision(&player, &pipe1, &pipe2);
+			// Update player
+			player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
+			printf("Player velocity: %f\n", player.vel_y);
+			player.positionRect.y += player.vel_y;
+			playerAngle = player.vel_y * PLAYER_ANGLE_MULTIPLIER;
 
-		// Update pipes
-		updatePipeStructs(&pipe1, &pipe2);
+			// Update pipes
+			updatePipeStructs(&pipe1, &pipe2);
+		}
 
 		// ============ Render Phase
 		// Render background
