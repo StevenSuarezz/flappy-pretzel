@@ -23,26 +23,29 @@ const int PIPE_WIDTH = 100;
 
 const int BACKGROUND_VOLUME_LEVEL = 10;
 
-struct playerStruct {
+struct PlayerStruct {
 	SDL_Texture *playerTexture;
 	SDL_Rect positionRect;
 	float vel_y;
 	int test;
 };
 
-struct pipeStruct {
+struct PipeStruct {
 	SDL_Texture *pipeTexture;
 	SDL_Rect topPositionRect;
 	SDL_Rect bottomPositionRect;
 	int gap;
 };
 
-void freeTextures(struct playerStruct *player, SDL_Texture *backgroundTexture) {
+struct AudioAssets {
+};
+
+void freeTextures(struct PlayerStruct *player, SDL_Texture *backgroundTexture) {
 	SDL_DestroyTexture(player->playerTexture);
 	SDL_DestroyTexture(backgroundTexture);
 }
 
-void initPlayerStruct(struct playerStruct *player) {
+void initPlayerStruct(struct PlayerStruct *player) {
 	player->positionRect.x = SCREEN_WIDTH / 3 - 70;
 	player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
 	player->positionRect.w = 320 / 5;
@@ -51,7 +54,7 @@ void initPlayerStruct(struct playerStruct *player) {
 	player->vel_y = 0.0f;
 }
 
-void setPipeOffScreen(struct pipeStruct *pipe1, int x_offset) {
+void setPipeOffScreen(struct PipeStruct *pipe1, int x_offset) {
 	// Create a gap of at least 100px and add a random amount to it clamped to
 	// 64px
 	pipe1->gap = (rand() % 64) + 100;
@@ -74,7 +77,7 @@ void setPipeOffScreen(struct pipeStruct *pipe1, int x_offset) {
 	pipe1->bottomPositionRect.h = SCREEN_HEIGHT;
 }
 
-void updatePipeStructs(struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
+void updatePipeStructs(struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 	pipe1->topPositionRect.x = pipe1->topPositionRect.x - PIPE_SPEED;
 	pipe1->bottomPositionRect.x = pipe1->topPositionRect.x;
 	pipe2->topPositionRect.x = pipe2->topPositionRect.x - PIPE_SPEED;
@@ -127,7 +130,7 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 }
 
 // TODO: First function that is a bool - lets either make all other functions a bool or make it return an int classic c style
-bool detectCollision(struct playerStruct *player, struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
+bool detectCollision(struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 	if (SDL_HasIntersection(&player->positionRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe1->bottomPositionRect)) {
 		printf("COLLISION WITH PIPE 1 HOLY SHIT\n");
 		return true;
@@ -138,7 +141,7 @@ bool detectCollision(struct playerStruct *player, struct pipeStruct *pipe1, stru
 	return false;
 }
 
-void drawDebugRects(SDL_Renderer *renderer, struct playerStruct *player, struct pipeStruct *pipe1, struct pipeStruct *pipe2) {
+void drawDebugRects(SDL_Renderer *renderer, struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 	SDL_RenderDrawRect(renderer, &player->positionRect);
 	SDL_RenderDrawRect(renderer, &pipe1->topPositionRect);
 	SDL_RenderDrawRect(renderer, &pipe1->bottomPositionRect);
@@ -151,9 +154,9 @@ int main(int argc, char *args[]) {
 	SDL_Renderer *renderer = NULL;
 	SDL_Texture *backgroundTexture;
 
-	struct playerStruct player = {0};
-	struct pipeStruct pipe1 = {0};
-	struct pipeStruct pipe2 = {0};
+	struct PlayerStruct player = {0};
+	struct PipeStruct pipe1 = {0};
+	struct PipeStruct pipe2 = {0};
 
 	float pipeVel = 0.5f;
 
