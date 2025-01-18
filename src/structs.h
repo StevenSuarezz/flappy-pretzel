@@ -1,3 +1,8 @@
+#ifndef STRUCTS_H
+#define STRUCTS_H
+
+#include "common.h"
+
 struct PlayerStruct {
 	SDL_Texture *playerTexture;
 	SDL_Rect positionRect;
@@ -14,3 +19,12 @@ struct PipeStruct {
 
 struct AudioAssets {
 };
+
+struct GameState {
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	bool gameIsRunning;
+	bool gameIsPaused;
+};
+
+#endif

@@ -4,9 +4,8 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <time.h>
+
+#include "common.h"
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -150,8 +149,6 @@ void drawDebugRects(SDL_Renderer *renderer, struct PlayerStruct *player, struct 
 }
 
 int main(int argc, char *args[]) {
-	SDL_Window *window = NULL;
-	SDL_Renderer *renderer = NULL;
 	SDL_Texture *backgroundTexture;
 
 	struct PlayerStruct player = {0};
@@ -231,36 +228,12 @@ int main(int argc, char *args[]) {
 	Uint64 frameStart;
 	int frameTime;
 
-	SDL_Event event;
-	bool gameIsRunning = true;
-	bool gameIsPaused = false;
-
 	double playerAngle = 0.0f;
 
 	// Main game loop
 	while (gameIsRunning) {
 		// ============= Input Phase
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				gameIsRunning = false;
-			}
-			if (event.type == SDL_KEYDOWN) {
-				switch (event.key.keysym.sym) {
-				case SDLK_ESCAPE:
-					gameIsRunning = false;
-					break;
-				case SDLK_SPACE:
-					player.vel_y = JUMP_FORCE;
-					break;
-
-				case SDLK_p:
-					gameIsPaused = !gameIsPaused;
-					// Optional: gameIsPaused ? Mix_PauseMusic() : Mix_ResumeMusic();
-					break;
-				}
-			}
-		}
-
+		doInput();
 		// ============= Update Phase
 		frameStart = SDL_GetTicks64();
 		double deltaTime = (frameStart - lastTime) / 1000.0f;
