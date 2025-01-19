@@ -22,3 +22,14 @@ void setPipeOffScreen(struct PipeStruct *pipe, int x_offset) {
 	pipe->bottomPositionRect.w = PIPE_WIDTH;
 	pipe->bottomPositionRect.h = SCREEN_HEIGHT;
 }
+
+void capFrameRate(Uint64 *frameStart, Uint64 *lastTime, double *deltaTime, int *frameTime) {
+	*frameStart = SDL_GetTicks64();
+	*deltaTime = (*frameStart - *lastTime) / 1000.0f;
+	*lastTime = *frameStart;
+
+	*frameTime = SDL_GetTicks64() - *frameStart;
+	if (*frameTime < FRAME_DELAY) {
+		SDL_Delay(FRAME_DELAY - *frameTime);
+	}
+}

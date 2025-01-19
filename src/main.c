@@ -11,6 +11,7 @@
 #include "init.h"
 #include "input.h"
 #include "update.h"
+#include "util.h"
 
 void freeTextures(struct PlayerStruct *player, struct GameAssets *gameAssets) {
 	SDL_DestroyTexture(player->playerTexture);
@@ -73,14 +74,7 @@ int main(int argc, char *args[]) {
 
 		// ====================================== Cap frame rate
 		// printf("DELTA TIME: %f\n", deltaTime);
-		frameStart = SDL_GetTicks64();
-		deltaTime = (frameStart - lastTime) / 1000.0f;
-		lastTime = frameStart;
-
-		frameTime = SDL_GetTicks64() - frameStart;
-		if (frameTime < FRAME_DELAY) {
-			SDL_Delay(FRAME_DELAY - frameTime);
-		}
+		capFrameRate(&frameStart, &lastTime, &deltaTime, &frameTime);
 	}
 
 	freeTextures(&player, &gameAssets);
