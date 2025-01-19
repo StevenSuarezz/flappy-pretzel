@@ -7,4 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "defs.h"
+#include "structs.h"
+
 #endif

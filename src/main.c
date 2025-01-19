@@ -7,38 +7,6 @@
 
 #include "common.h"
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
-
-#define FPS 60
-#define GRAVITY 9.81f
-
-const int FRAME_DELAY = 1000 / FPS;
-const float JUMP_FORCE = -7.0f;
-const float FALL_MULTIPLIER = 1.75f;
-const float PLAYER_ANGLE_MULTIPLIER = 3.5f;
-const int PIPE_SPEED = 3;
-const int PIPE_WIDTH = 100;
-
-const int BACKGROUND_VOLUME_LEVEL = 10;
-
-struct PlayerStruct {
-	SDL_Texture *playerTexture;
-	SDL_Rect positionRect;
-	float vel_y;
-	int test;
-};
-
-struct PipeStruct {
-	SDL_Texture *pipeTexture;
-	SDL_Rect topPositionRect;
-	SDL_Rect bottomPositionRect;
-	int gap;
-};
-
-struct AudioAssets {
-};
-
 void freeTextures(struct PlayerStruct *player, SDL_Texture *backgroundTexture) {
 	SDL_DestroyTexture(player->playerTexture);
 	SDL_DestroyTexture(backgroundTexture);
@@ -149,6 +117,7 @@ void drawDebugRects(SDL_Renderer *renderer, struct PlayerStruct *player, struct 
 }
 
 int main(int argc, char *args[]) {
+	struct GameState gameState = {0};
 	SDL_Texture *backgroundTexture;
 
 	struct PlayerStruct player = {0};
@@ -169,19 +138,19 @@ int main(int argc, char *args[]) {
 		printf("could not initialize sdl2: %s\n", SDL_GetError());
 		return -1;
 	}
-	window = SDL_CreateWindow("Flappy Pretzel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (window == NULL) {
+	gameState.window = SDL_CreateWindow("Flappy Pretzel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (gameState.window == NULL) {
 		printf("could not create window: %s\n", SDL_GetError());
 		return -1;
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (renderer == NULL) {
+	gameState.renderer = SDL_CreateRenderer(gameState.window, -1, SDL_RENDERER_ACCELERATED);
+	if (gameState.renderer == NULL) {
 		printf("Could not create renderer: %s\n", SDL_GetError());
 		return -1;
 	}
 
-	if (initGameTextures(renderer, &player.playerTexture, &backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
+	if (initGameTextures(gameState.renderer, &player.playerTexture, &backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
 		printf("Error initializing game textures\n");
 		printf("Are you running game from the build dir as stated in the README instructions?\n");
 		return -1;
@@ -231,16 +200,16 @@ int main(int argc, char *args[]) {
 	double playerAngle = 0.0f;
 
 	// Main game loop
-	while (gameIsRunning) {
+	while (gameState.gameIsRunning) {
 		// ============= Input Phase
-		doInput();
+		doInput(&gameState, &player);
 		// ============= Update Phase
 		frameStart = SDL_GetTicks64();
 		double deltaTime = (frameStart - lastTime) / 1000.0f;
 		lastTime = frameStart;
 		// printf("DELTA TIME: %f\n", deltaTime);
 
-		if (!gameIsPaused) {
+		if (!gameState.gameIsPaused) {
 			if (detectCollision(&player, &pipe1, &pipe2) && Mix_Playing(0) == 0) {
 				Mix_PlayChannel(0, pretzelSFX1, 0);
 			}
@@ -256,23 +225,23 @@ int main(int argc, char *args[]) {
 
 		// ============ Render Phase
 		// Render background
-		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+		SDL_SetRenderDrawColor(gameState.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gameState.renderer);
+		SDL_RenderCopy(gameState.renderer, backgroundTexture, NULL, NULL);
 
 		// Render player
-		SDL_RenderCopyEx(renderer, player.playerTexture, NULL, &player.positionRect, playerAngle, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyEx(gameState.renderer, player.playerTexture, NULL, &player.positionRect, playerAngle, NULL, SDL_FLIP_NONE);
 
 		// Render pipes
-		SDL_RenderCopyEx(renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
-		SDL_RenderCopy(renderer, pipe1.pipeTexture, NULL, &pipe1.bottomPositionRect);
+		SDL_RenderCopyEx(gameState.renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
+		SDL_RenderCopy(gameState.renderer, pipe1.pipeTexture, NULL, &pipe1.bottomPositionRect);
 
-		SDL_RenderCopyEx(renderer, pipe2.pipeTexture, NULL, &pipe2.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
-		SDL_RenderCopy(renderer, pipe2.pipeTexture, NULL, &pipe2.bottomPositionRect);
+		SDL_RenderCopyEx(gameState.renderer, pipe2.pipeTexture, NULL, &pipe2.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
+		SDL_RenderCopy(gameState.renderer, pipe2.pipeTexture, NULL, &pipe2.bottomPositionRect);
 
-		drawDebugRects(renderer, &player, &pipe1, &pipe2);
+		drawDebugRects(gameState.renderer, &player, &pipe1, &pipe2);
 
-		SDL_RenderPresent(renderer);
+		SDL_RenderPresent(gameState.renderer);
 
 		frameTime = SDL_GetTicks64() - frameStart;
 		if (frameTime < FRAME_DELAY) {
@@ -283,8 +252,8 @@ int main(int argc, char *args[]) {
 	freeTextures(&player, backgroundTexture);
 	Mix_FreeMusic(gameMusic);
 	Mix_FreeChunk(pretzelSFX1);
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(gameState.renderer);
+	SDL_DestroyWindow(gameState.window);
 	SDL_Quit();
 	return 0;
 }
