@@ -1,13 +1,14 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
+#include "SDL2/SDL_mixer.h"
 #include "common.h"
 
 struct PlayerStruct {
 	SDL_Texture *playerTexture;
 	SDL_Rect positionRect;
 	float vel_y;
-	int test;
+	double angle;
 };
 
 struct PipeStruct {
@@ -18,6 +19,16 @@ struct PipeStruct {
 };
 
 struct AudioAssets {
+	Mix_Music *backgroundMusic;
+	Mix_Chunk *pretzelSFX1;
+	Mix_Chunk *pretzelSFX2;
+	Mix_Chunk *pretzelSFX3;
+	Mix_Chunk *pretzelSFX4;
+};
+
+struct GameAssets {
+	SDL_Texture *backgroundTexture;
+	struct AudioAssets audioAssets;
 };
 
 struct GameState {

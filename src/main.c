@@ -5,20 +5,15 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 
+#include "audio.h"
 #include "common.h"
+#include "draw.h"
+#include "init.h"
+#include "input.h"
 
-void freeTextures(struct PlayerStruct *player, SDL_Texture *backgroundTexture) {
+void freeTextures(struct PlayerStruct *player, struct GameAssets *gameAssets) {
 	SDL_DestroyTexture(player->playerTexture);
-	SDL_DestroyTexture(backgroundTexture);
-}
-
-void initPlayerStruct(struct PlayerStruct *player) {
-	player->positionRect.x = SCREEN_WIDTH / 3 - 70;
-	player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
-	player->positionRect.w = 320 / 5;
-	player->positionRect.h = 196 / 5;
-
-	player->vel_y = 0.0f;
+	SDL_DestroyTexture(gameAssets->backgroundTexture);
 }
 
 void setPipeOffScreen(struct PipeStruct *pipe1, int x_offset) {
@@ -60,42 +55,6 @@ void updatePipeStructs(struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 	}
 }
 
-// Load assets into surfaces and create textures from those surfaces
-int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Texture **backgroundTexture, SDL_Texture **pipe1Texture, SDL_Texture **pipe2Texture) {
-	// Player
-	SDL_Surface *playerSurface = IMG_Load("../assets/images/pretzel.png");
-	if (playerSurface == NULL) {
-		printf("Error loading player surface: %s\n", IMG_GetError());
-		return -1;
-	}
-
-	*playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
-	SDL_FreeSurface(playerSurface);
-
-	// Background
-	SDL_Surface *backgroundSurface = IMG_Load("../assets/images/background.png");
-	if (backgroundSurface == NULL) {
-		printf("Error loading background surface: %s\n", IMG_GetError());
-		return -1;
-	}
-
-	*backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
-	SDL_FreeSurface(backgroundSurface);
-
-	// Pipes
-	SDL_Surface *pipeSurface = IMG_Load("../assets/images/pipe.png");
-	if (pipeSurface == NULL) {
-		printf("Error loading pipe surface: %s\n", IMG_GetError());
-		return -1;
-	}
-
-	*pipe1Texture = SDL_CreateTextureFromSurface(renderer, pipeSurface);
-	*pipe2Texture = SDL_CreateTextureFromSurface(renderer, pipeSurface);
-	SDL_FreeSurface(pipeSurface);
-
-	return 0;
-}
-
 // TODO: First function that is a bool - lets either make all other functions a bool or make it return an int classic c style
 bool detectCollision(struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 	if (SDL_HasIntersection(&player->positionRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe1->bottomPositionRect)) {
@@ -108,18 +67,9 @@ bool detectCollision(struct PlayerStruct *player, struct PipeStruct *pipe1, stru
 	return false;
 }
 
-void drawDebugRects(SDL_Renderer *renderer, struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
-	SDL_RenderDrawRect(renderer, &player->positionRect);
-	SDL_RenderDrawRect(renderer, &pipe1->topPositionRect);
-	SDL_RenderDrawRect(renderer, &pipe1->bottomPositionRect);
-	SDL_RenderDrawRect(renderer, &pipe2->topPositionRect);
-	SDL_RenderDrawRect(renderer, &pipe2->bottomPositionRect);
-}
-
 int main(int argc, char *args[]) {
 	struct GameState gameState = {0};
-	SDL_Texture *backgroundTexture;
-
+	struct GameAssets gameAssets = {0};
 	struct PlayerStruct player = {0};
 	struct PipeStruct pipe1 = {0};
 	struct PipeStruct pipe2 = {0};
@@ -128,67 +78,31 @@ int main(int argc, char *args[]) {
 
 	srand(time(NULL));
 
-	Mix_Music *gameMusic = NULL;
-	Mix_Chunk *pretzelSFX1 = NULL;
-	Mix_Chunk *pretzelSFX2 = NULL;
-	Mix_Chunk *pretzelSFX3 = NULL;
-	Mix_Chunk *pretzelSFX4 = NULL;
-
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("could not initialize sdl2: %s\n", SDL_GetError());
-		return -1;
-	}
-	gameState.window = SDL_CreateWindow("Flappy Pretzel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (gameState.window == NULL) {
-		printf("could not create window: %s\n", SDL_GetError());
+	if (initSubsystems() < 0) {
+		printf("Subsytems failed to initalize...\n");
 		return -1;
 	}
 
-	gameState.renderer = SDL_CreateRenderer(gameState.window, -1, SDL_RENDERER_ACCELERATED);
-	if (gameState.renderer == NULL) {
-		printf("Could not create renderer: %s\n", SDL_GetError());
+	if (initGameState(&gameState) < 0) {
+		printf("Failed to initialize gameState\n");
 		return -1;
 	}
 
-	if (initGameTextures(gameState.renderer, &player.playerTexture, &backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
+	if (initGameTextures(gameState.renderer, &player.playerTexture, &gameAssets.backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
 		printf("Error initializing game textures\n");
 		printf("Are you running game from the build dir as stated in the README instructions?\n");
 		return -1;
 	}
 
-	if (Mix_Init(MIX_INIT_MP3) < 0) {
-		printf("Could not initialize SDL mixer: %s\n", Mix_GetError());
+	if (initAudioAssets(&gameAssets) < 0) {
+		printf("Failed to initialize game assets struct\n");
 		return -1;
 	}
 
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+	if (initPlayerStruct(&player) < 0) {
+		printf("Failed to initialize player struct...\n");
 		return -1;
 	}
-
-	gameMusic = Mix_LoadMUS("../assets/sound/main-music.mp3");
-	if (gameMusic == NULL) {
-		printf("Failed to load background music: %s\n", Mix_GetError());
-		return -1;
-	}
-
-	pretzelSFX1 = Mix_LoadWAV("../assets/sound/pretzel1.mp3");
-	if (pretzelSFX1 == NULL) {
-		printf("Failed to load pretzelSFX1: %s\n", Mix_GetError());
-		return -1;
-	}
-
-	if (Mix_VolumeMusic(BACKGROUND_VOLUME_LEVEL) < 0) {
-		printf("Failed to reduce music: %s\n", Mix_GetError());
-		return -1;
-	}
-
-	if (Mix_PlayMusic(gameMusic, -1) < 0) {
-		printf("Failed to start playing background music: %s\n", Mix_GetError());
-		return -1;
-	}
-
-	initPlayerStruct(&player);
 
 	setPipeOffScreen(&pipe1, 0);
 	setPipeOffScreen(&pipe2, 350);
@@ -197,14 +111,12 @@ int main(int argc, char *args[]) {
 	Uint64 frameStart;
 	int frameTime;
 
-	double playerAngle = 0.0f;
-
 	gameState.isRunning = true;
 	// Main game loop
 	while (gameState.isRunning) {
-		// ============= Input Phase
+		// ====================================== Input Phase
 		doInput(&gameState, &player);
-		// ============= Update Phase
+		// ====================================== Update Phase
 		frameStart = SDL_GetTicks64();
 		double deltaTime = (frameStart - lastTime) / 1000.0f;
 		lastTime = frameStart;
@@ -212,13 +124,13 @@ int main(int argc, char *args[]) {
 
 		if (!gameState.isPaused) {
 			if (detectCollision(&player, &pipe1, &pipe2) && Mix_Playing(0) == 0) {
-				Mix_PlayChannel(0, pretzelSFX1, 0);
+				Mix_PlayChannel(0, gameAssets.audioAssets.pretzelSFX1, 0);
 			}
 			// Update player
 			player.vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
 			printf("Player velocity: %f\n", player.vel_y);
 			player.positionRect.y += player.vel_y;
-			playerAngle = player.vel_y * PLAYER_ANGLE_MULTIPLIER;
+			player.angle = player.vel_y * PLAYER_ANGLE_MULTIPLIER;
 
 			// Update pipes
 			updatePipeStructs(&pipe1, &pipe2);
@@ -226,33 +138,16 @@ int main(int argc, char *args[]) {
 
 		// ============ Render Phase
 		// Render background
-		SDL_SetRenderDrawColor(gameState.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-		SDL_RenderClear(gameState.renderer);
-		SDL_RenderCopy(gameState.renderer, backgroundTexture, NULL, NULL);
-
-		// Render player
-		SDL_RenderCopyEx(gameState.renderer, player.playerTexture, NULL, &player.positionRect, playerAngle, NULL, SDL_FLIP_NONE);
-
-		// Render pipes
-		SDL_RenderCopyEx(gameState.renderer, pipe1.pipeTexture, NULL, &pipe1.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
-		SDL_RenderCopy(gameState.renderer, pipe1.pipeTexture, NULL, &pipe1.bottomPositionRect);
-
-		SDL_RenderCopyEx(gameState.renderer, pipe2.pipeTexture, NULL, &pipe2.topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
-		SDL_RenderCopy(gameState.renderer, pipe2.pipeTexture, NULL, &pipe2.bottomPositionRect);
-
-		drawDebugRects(gameState.renderer, &player, &pipe1, &pipe2);
-
-		SDL_RenderPresent(gameState.renderer);
-
+		render(&gameState, &gameAssets, &player, &pipe1, &pipe2);
 		frameTime = SDL_GetTicks64() - frameStart;
 		if (frameTime < FRAME_DELAY) {
 			SDL_Delay(FRAME_DELAY - frameTime);
 		}
 	}
 
-	freeTextures(&player, backgroundTexture);
-	Mix_FreeMusic(gameMusic);
-	Mix_FreeChunk(pretzelSFX1);
+	freeTextures(&player, &gameAssets);
+	Mix_FreeMusic(gameAssets.audioAssets.backgroundMusic);
+	Mix_FreeChunk(gameAssets.audioAssets.pretzelSFX1);
 	SDL_DestroyRenderer(gameState.renderer);
 	SDL_DestroyWindow(gameState.window);
 	SDL_Quit();
