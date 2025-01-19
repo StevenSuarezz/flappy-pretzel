@@ -16,6 +16,8 @@ add_executable(game
     src/draw.c
     src/init.c
     src/input.c
+    src/util.c
+    src/update.c
     src/common.h
 )
 target_link_libraries(game SDL2::SDL2 SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer)

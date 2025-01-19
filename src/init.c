@@ -1,5 +1,6 @@
 #include "init.h"
 #include "SDL2/SDL_image.h"
+#include "util.h"
 
 int initPlayerStruct(struct PlayerStruct *player) {
 	if (player == NULL) {
@@ -82,4 +83,9 @@ int initSubsystems() {
 	}
 
 	return 0;
+}
+
+void initPipeStructs(struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
+	setPipeOffScreen(pipe1, 0);
+	setPipeOffScreen(pipe2, 350);
 }

@@ -9,4 +9,7 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 int initGameState(struct GameState *gameState);
 int initSubsystems(void);
 
+void initPipeStructs(struct PipeStruct *pipe1, struct PipeStruct *pipe2);
+void setPipeOffScreen(struct PipeStruct *pipe1, int x_offset);
+
 #endif
