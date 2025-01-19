@@ -10,5 +10,12 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 
-add_executable(game src/main.c)
+add_executable(game 
+    src/main.c
+    src/audio.c
+    src/draw.c
+    src/init.c
+    src/input.c
+    src/common.h
+)
 target_link_libraries(game SDL2::SDL2 SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer)

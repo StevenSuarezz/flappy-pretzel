@@ -23,8 +23,8 @@ struct AudioAssets {
 struct GameState {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-	bool gameIsRunning;
-	bool gameIsPaused;
+	bool isRunning;
+	bool isPaused;
 };
 
 #endif

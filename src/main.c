@@ -199,8 +199,9 @@ int main(int argc, char *args[]) {
 
 	double playerAngle = 0.0f;
 
+	gameState.isRunning = true;
 	// Main game loop
-	while (gameState.gameIsRunning) {
+	while (gameState.isRunning) {
 		// ============= Input Phase
 		doInput(&gameState, &player);
 		// ============= Update Phase
@@ -209,7 +210,7 @@ int main(int argc, char *args[]) {
 		lastTime = frameStart;
 		// printf("DELTA TIME: %f\n", deltaTime);
 
-		if (!gameState.gameIsPaused) {
+		if (!gameState.isPaused) {
 			if (detectCollision(&player, &pipe1, &pipe2) && Mix_Playing(0) == 0) {
 				Mix_PlayChannel(0, pretzelSFX1, 0);
 			}
