@@ -24,6 +24,7 @@ void setPipeOffScreen(struct PipeStruct *pipe, int x_offset) {
 }
 
 void capFrameRate(Uint64 *frameStart, Uint64 *lastTime, double *deltaTime, int *frameTime) {
+	// printf("DELTA TIME: %f\n", deltaTime);
 	*frameStart = SDL_GetTicks64();
 	*deltaTime = (*frameStart - *lastTime) / 1000.0f;
 	*lastTime = *frameStart;

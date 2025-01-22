@@ -73,7 +73,6 @@ int main(int argc, char *args[]) {
 		render(&gameState, &gameAssets, &player, &pipe1, &pipe2);
 
 		// ====================================== Cap frame rate
-		// printf("DELTA TIME: %f\n", deltaTime);
 		capFrameRate(&frameStart, &lastTime, &deltaTime, &frameTime);
 	}
 
