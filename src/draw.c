@@ -8,7 +8,7 @@ void render(struct GameState *gameState, struct GameAssets *gameAssets, struct P
 	SDL_RenderCopy(gameState->renderer, gameAssets->backgroundTexture, NULL, NULL);
 
 	// Render player
-	SDL_RenderCopyEx(gameState->renderer, player->playerTexture, NULL, &player->positionRect, player->angle, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(gameState->renderer, player->playerTexture, NULL, &player->textureRect, player->angle, NULL, SDL_FLIP_NONE);
 
 	// Render pipes
 	SDL_RenderCopyEx(gameState->renderer, pipe1->pipeTexture, NULL, &pipe1->topPositionRect, 0.0f, NULL, SDL_FLIP_VERTICAL);
@@ -23,7 +23,7 @@ void render(struct GameState *gameState, struct GameAssets *gameAssets, struct P
 }
 
 void drawDebugRects(SDL_Renderer *renderer, struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
-	SDL_RenderDrawRect(renderer, &player->positionRect);
+	SDL_RenderDrawRect(renderer, &player->textureRect);
 	SDL_RenderDrawRect(renderer, &pipe1->topPositionRect);
 	SDL_RenderDrawRect(renderer, &pipe1->bottomPositionRect);
 	SDL_RenderDrawRect(renderer, &pipe2->topPositionRect);

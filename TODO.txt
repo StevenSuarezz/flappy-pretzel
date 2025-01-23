@@ -1,3 +1,0 @@
-Complete overhaul of code structure
-Refactor bigger systems into separate folders to keep main.c clean
-

@@ -6,7 +6,8 @@
 
 struct PlayerStruct {
 	SDL_Texture *playerTexture;
-	SDL_Rect positionRect;
+	SDL_Rect textureRect;
+	SDL_Rect collisionRect;
 	float vel_y;
 	double angle;
 };

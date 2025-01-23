@@ -30,6 +30,9 @@ int main(int argc, char *args[]) {
 	Uint64 frameStart;
 	int frameTime;
 
+	int playerStartX = SCREEN_WIDTH / 3 - 70;
+	int playerStartY = SCREEN_HEIGHT / 2 - 50;
+
 	srand(time(NULL));
 
 	if (initSubsystems() < 0) {
@@ -53,7 +56,7 @@ int main(int argc, char *args[]) {
 		return -1;
 	}
 
-	if (initPlayerStruct(&player) < 0) {
+	if (initPlayerStruct(&player, playerStartX, playerStartY) < 0) {
 		printf("Failed to initialize player struct...\n");
 		return -1;
 	}

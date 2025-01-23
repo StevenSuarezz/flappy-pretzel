@@ -2,16 +2,16 @@
 #include "SDL2/SDL_image.h"
 #include "util.h"
 
-int initPlayerStruct(struct PlayerStruct *player) {
+int initPlayerStruct(struct PlayerStruct *player, int x, int y) {
 	if (player == NULL) {
 		printf("initPlayerStruct was passed a nullptr for player\n");
 		return -1;
 	}
 
-	player->positionRect.x = SCREEN_WIDTH / 3 - 70;
-	player->positionRect.y = SCREEN_HEIGHT / 2 - 50;
-	player->positionRect.w = 320 / 5;
-	player->positionRect.h = 196 / 5;
+	player->textureRect.x = x;
+	player->textureRect.y = y;
+	player->textureRect.w = PLAYER_TEXTURE_WIDTH;
+	player->textureRect.h = PLAYER_TEXTURE_HEIGHT;
 
 	player->vel_y = 0.0f;
 	player->angle = 0.0f;
@@ -87,5 +87,5 @@ int initSubsystems() {
 
 void initPipeStructs(struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 	setPipeOffScreen(pipe1, 0);
-	setPipeOffScreen(pipe2, 350);
+	setPipeOffScreen(pipe2, 700);
 }

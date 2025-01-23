@@ -3,11 +3,11 @@
 void setPipeOffScreen(struct PipeStruct *pipe, int x_offset) {
 	// Create a gap of at least 100px and add a random amount to it clamped to
 	// 64px
-	pipe->gap = (rand() % 64) + 100;
+	pipe->gap = (rand() % 64) + BASE_PIPE_GAP;
 
 	// Recall that SCREEN_HEIGHT = 480
-	int top_min = -440;
-	int top_max = -164;
+	int top_min = -680;
+	int top_max = -284;
 	int top_y = rand() % (top_max - top_min + 1) + top_min;
 
 	int bot_y = top_y + SCREEN_HEIGHT + pipe->gap;

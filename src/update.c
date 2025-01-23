@@ -10,7 +10,7 @@ void update(struct GameState *gameState, struct GameAssets *gameAssets, struct P
 		// Update player
 		player->vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
 		printf("Player velocity: %f\n", player->vel_y);
-		player->positionRect.y += player->vel_y;
+		player->textureRect.y += player->vel_y;
 		player->angle = player->vel_y * PLAYER_ANGLE_MULTIPLIER;
 
 		// Update pipes
@@ -36,10 +36,10 @@ void updatePipeStructs(struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 
 // TODO: First function that is a bool - lets either make all other functions a bool or make it return an int classic c style
 bool detectCollision(struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
-	if (SDL_HasIntersection(&player->positionRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe1->bottomPositionRect)) {
+	if (SDL_HasIntersection(&player->textureRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->textureRect, &pipe1->bottomPositionRect)) {
 		printf("COLLISION WITH PIPE 1 HOLY SHIT\n");
 		return true;
-	} else if (SDL_HasIntersection(&player->positionRect, &pipe2->topPositionRect) || SDL_HasIntersection(&player->positionRect, &pipe2->bottomPositionRect)) {
+	} else if (SDL_HasIntersection(&player->textureRect, &pipe2->topPositionRect) || SDL_HasIntersection(&player->textureRect, &pipe2->bottomPositionRect)) {
 		printf("COLLISION WITH PIPE 2 HOLY SHIT\n");
 		return true;
 	}
