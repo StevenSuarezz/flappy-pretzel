@@ -4,6 +4,6 @@
 #include "common.h"
 #include "structs.h"
 
-void doInput(struct GameState *gameState, struct PlayerStruct *playerStruct);
+void doInput(struct Game *game, struct PlayerStruct *playerStruct);
 
 #endif

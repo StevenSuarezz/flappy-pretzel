@@ -21,6 +21,7 @@ void setPipeOffScreen(struct PipeStruct *pipe, int x_offset) {
 	pipe->bottomPositionRect.y = bot_y;
 	pipe->bottomPositionRect.w = PIPE_WIDTH;
 	pipe->bottomPositionRect.h = SCREEN_HEIGHT;
+	pipe->hasScored = false;
 }
 
 void capFrameRate(Uint64 *frameStart, Uint64 *lastTime, double *deltaTime, int *frameTime) {

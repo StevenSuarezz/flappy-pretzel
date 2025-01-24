@@ -19,7 +19,7 @@ void freeTextures(struct PlayerStruct *player, struct GameAssets *gameAssets) {
 }
 
 int main(int argc, char *args[]) {
-	struct GameState gameState = {0};
+	struct Game game = {0};
 	struct GameAssets gameAssets = {0};
 	struct PlayerStruct player = {0};
 	struct PipeStruct pipe1 = {0};
@@ -40,12 +40,12 @@ int main(int argc, char *args[]) {
 		return -1;
 	}
 
-	if (initGameState(&gameState) < 0) {
+	if (initGame(&game) < 0) {
 		printf("Failed to initialize gameState\n");
 		return -1;
 	}
 
-	if (initGameTextures(gameState.renderer, &player.playerTexture, &gameAssets.backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
+	if (initGameTextures(game.renderer, &player.playerTexture, &gameAssets.backgroundTexture, &pipe1.pipeTexture, &pipe2.pipeTexture) < 0) {
 		printf("Error initializing game textures\n");
 		printf("Are you running game from the build dir as stated in the README instructions?\n");
 		return -1;
@@ -64,16 +64,15 @@ int main(int argc, char *args[]) {
 	initPipeStructs(&pipe1, &pipe2);
 
 	// Main game loop
-	gameState.isRunning = true;
-	while (gameState.isRunning) {
+	while (game.isRunning) {
 		// ====================================== Input Phase
-		doInput(&gameState, &player);
+		doInput(&game, &player);
 
 		// ====================================== Update Phase
-		update(&gameState, &gameAssets, &player, &pipe1, &pipe2, deltaTime);
+		update(&game, &gameAssets, &player, &pipe1, &pipe2, deltaTime);
 
 		// ====================================== Render Phase
-		render(&gameState, &gameAssets, &player, &pipe1, &pipe2);
+		render(&game, &gameAssets, &player, &pipe1, &pipe2);
 
 		// ====================================== Cap frame rate
 		capFrameRate(&frameStart, &lastTime, &deltaTime, &frameTime);
@@ -82,8 +81,8 @@ int main(int argc, char *args[]) {
 	freeTextures(&player, &gameAssets);
 	Mix_FreeMusic(gameAssets.audioAssets.backgroundMusic);
 	Mix_FreeChunk(gameAssets.audioAssets.pretzelSFX1);
-	SDL_DestroyRenderer(gameState.renderer);
-	SDL_DestroyWindow(gameState.window);
+	SDL_DestroyRenderer(game.renderer);
+	SDL_DestroyWindow(game.window);
 	SDL_Quit();
 	return 0;
 }

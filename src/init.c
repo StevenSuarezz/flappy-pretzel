@@ -1,5 +1,6 @@
 #include "init.h"
 #include "SDL2/SDL_image.h"
+#include "defs.h"
 #include "util.h"
 
 int initPlayerStruct(struct PlayerStruct *player, int x, int y) {
@@ -12,6 +13,11 @@ int initPlayerStruct(struct PlayerStruct *player, int x, int y) {
 	player->textureRect.y = y;
 	player->textureRect.w = PLAYER_TEXTURE_WIDTH;
 	player->textureRect.h = PLAYER_TEXTURE_HEIGHT;
+
+	player->collisionRect.x = x + PLAYER_HITBOX_LEFT_OFFSET;
+	player->collisionRect.y = y + PLAYER_HITBOX_TOP_BOTTOM_OFFSET;
+	player->collisionRect.w = PLAYER_TEXTURE_WIDTH - PLAYER_HITBOX_LEFT_OFFSET - PLAYER_HITBOX_RIGHT_OFFSET;
+	player->collisionRect.h = PLAYER_TEXTURE_HEIGHT - (2 * PLAYER_HITBOX_TOP_BOTTOM_OFFSET);
 
 	player->vel_y = 0.0f;
 	player->angle = 0.0f;
@@ -55,19 +61,23 @@ int initGameTextures(SDL_Renderer *renderer, SDL_Texture **playerTexture, SDL_Te
 	return 0;
 }
 
-int initGameState(struct GameState *gameState) {
-	gameState->window = SDL_CreateWindow("Flappy Pretzel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (gameState->window == NULL) {
+int initGame(struct Game *game) {
+	game->window = SDL_CreateWindow("Flappy Pretzel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (game->window == NULL) {
 		printf("could not create window: %s\n", SDL_GetError());
 		return -1;
 	}
 
-	gameState->renderer = SDL_CreateRenderer(gameState->window, -1, SDL_RENDERER_ACCELERATED);
-	if (gameState->renderer == NULL) {
+	game->renderer = SDL_CreateRenderer(game->window, -1, SDL_RENDERER_ACCELERATED);
+	if (game->renderer == NULL) {
 		printf("Could not create renderer: %s\n", SDL_GetError());
 		return -1;
 	}
 
+	game->score = 0;
+
+	game->isRunning = true;
+	game->isPaused = false;
 	return 0;
 }
 

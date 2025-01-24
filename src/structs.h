@@ -4,6 +4,12 @@
 #include "SDL2/SDL_mixer.h"
 #include "common.h"
 
+typedef enum {
+	PLAYING,
+	PAUSED,
+	MENU
+} State;
+
 struct PlayerStruct {
 	SDL_Texture *playerTexture;
 	SDL_Rect textureRect;
@@ -17,6 +23,7 @@ struct PipeStruct {
 	SDL_Rect topPositionRect;
 	SDL_Rect bottomPositionRect;
 	int gap;
+	bool hasScored;
 };
 
 struct AudioAssets {
@@ -32,9 +39,11 @@ struct GameAssets {
 	struct AudioAssets audioAssets;
 };
 
-struct GameState {
+struct Game {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
+	State state;
+	int score;
 	bool isRunning;
 	bool isPaused;
 };

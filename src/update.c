@@ -1,20 +1,24 @@
 #include "update.h"
 #include "util.h"
 
-void update(struct GameState *gameState, struct GameAssets *gameAssets, struct PlayerStruct *player,
+void update(struct Game *game, struct GameAssets *gameAssets, struct PlayerStruct *player,
 			struct PipeStruct *pipe1, struct PipeStruct *pipe2, double deltaTime) {
-	if (!gameState->isPaused) {
+	if (!game->isPaused) {
 		if (detectCollision(player, pipe1, pipe2) && Mix_Playing(0) == 0) {
 			Mix_PlayChannel(0, gameAssets->audioAssets.pretzelSFX1, 0);
 		}
 		// Update player
 		player->vel_y += GRAVITY * FALL_MULTIPLIER * deltaTime;
-		printf("Player velocity: %f\n", player->vel_y);
+		// printf("Player velocity: %f\n", player->vel_y);
 		player->textureRect.y += player->vel_y;
+		printf("Player hitbox y: %d\n", player->collisionRect.y);
+		player->collisionRect.y += player->vel_y;
 		player->angle = player->vel_y * PLAYER_ANGLE_MULTIPLIER;
 
 		// Update pipes
 		updatePipeStructs(pipe1, pipe2);
+
+		updateScore(game, player, pipe1, pipe2);
 	}
 }
 
@@ -36,12 +40,25 @@ void updatePipeStructs(struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
 
 // TODO: First function that is a bool - lets either make all other functions a bool or make it return an int classic c style
 bool detectCollision(struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
-	if (SDL_HasIntersection(&player->textureRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->textureRect, &pipe1->bottomPositionRect)) {
+	if (SDL_HasIntersection(&player->collisionRect, &pipe1->topPositionRect) || SDL_HasIntersection(&player->collisionRect, &pipe1->bottomPositionRect)) {
 		printf("COLLISION WITH PIPE 1 HOLY SHIT\n");
 		return true;
-	} else if (SDL_HasIntersection(&player->textureRect, &pipe2->topPositionRect) || SDL_HasIntersection(&player->textureRect, &pipe2->bottomPositionRect)) {
+	} else if (SDL_HasIntersection(&player->collisionRect, &pipe2->topPositionRect) || SDL_HasIntersection(&player->collisionRect, &pipe2->bottomPositionRect)) {
 		printf("COLLISION WITH PIPE 2 HOLY SHIT\n");
 		return true;
 	}
 	return false;
+}
+
+void updateScore(struct Game *game, struct PlayerStruct *player, struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
+	int pipe1Center = pipe1->topPositionRect.x + (PIPE_WIDTH / 2);
+	int pipe2Center = pipe2->topPositionRect.x + (PIPE_WIDTH / 2);
+
+	if (player->textureRect.x > pipe1Center && !pipe1->hasScored) {
+		pipe1->hasScored = true;
+		game->score++;
+	} else if (player->textureRect.x > pipe2Center && !pipe2->hasScored) {
+		pipe2->hasScored = true;
+		game->score++;
+	}
 }
