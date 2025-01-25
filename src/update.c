@@ -3,6 +3,18 @@
 
 void update(struct Game *game, struct GameAssets *gameAssets, struct PlayerStruct *player,
 			struct PipeStruct *pipe1, struct PipeStruct *pipe2, double deltaTime) {
+
+	switch (game->state) {
+	case PLAYING:
+		break;
+	case PAUSED:
+		break;
+	case MENU:
+		break;
+	default:
+		break;
+	};
+
 	if (!game->isPaused) {
 		if (detectCollision(player, pipe1, pipe2) && Mix_Playing(0) == 0) {
 			Mix_PlayChannel(0, gameAssets->audioAssets.pretzelSFX1, 0);

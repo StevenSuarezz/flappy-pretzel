@@ -3,6 +3,18 @@
 
 void render(struct Game *game, struct GameAssets *gameAssets, struct PlayerStruct *player,
 			struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
+
+	switch (game->state) {
+	case PLAYING:
+		break;
+	case PAUSED:
+		break;
+	case MENU:
+		break;
+	default:
+		break;
+	};
+
 	SDL_SetRenderDrawColor(game->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(game->renderer);
 	SDL_RenderCopy(game->renderer, gameAssets->backgroundTexture, NULL, NULL);
