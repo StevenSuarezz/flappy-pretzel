@@ -18,6 +18,7 @@ void doInput(struct Game *game, struct PlayerStruct *playerStruct) {
 				break;
 
 			case SDLK_p:
+				game->state = game->isPaused ? PLAYING : PAUSED;
 				game->isPaused = !game->isPaused;
 				// Optional: gameIsPaused ? Mix_PauseMusic() : Mix_ResumeMusic();
 				break;
