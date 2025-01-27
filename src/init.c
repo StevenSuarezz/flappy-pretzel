@@ -1,5 +1,6 @@
 #include "init.h"
 #include "SDL2/SDL_image.h"
+#include "SDL2/SDL_ttf.h"
 #include "defs.h"
 #include "util.h"
 
@@ -83,12 +84,17 @@ int initGame(struct Game *game) {
 
 int initSubsystems() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("could not initialize sdl2: %s\n", SDL_GetError());
+		printf("could not initialize SDL2: %s\n", SDL_GetError());
 		return -1;
 	}
 
 	if (Mix_Init(MIX_INIT_MP3) < 0) {
 		printf("Could not initialize SDL mixer: %s\n", Mix_GetError());
+		return -1;
+	}
+
+	if (TTF_Init() < 0) {
+		printf("Could not initialize TTF: %s\n", TTF_GetError());
 		return -1;
 	}
 
