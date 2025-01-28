@@ -81,6 +81,9 @@ int main(int argc, char *args[]) {
 	freeTextures(&player, &gameAssets);
 	Mix_FreeMusic(gameAssets.audioAssets.backgroundMusic);
 	Mix_FreeChunk(gameAssets.audioAssets.pretzelSFX1);
+	Mix_FreeChunk(gameAssets.audioAssets.pretzelSFX2);
+	Mix_FreeChunk(gameAssets.audioAssets.pretzelSFX3);
+	Mix_FreeChunk(gameAssets.audioAssets.pretzelSFX4);
 	SDL_DestroyRenderer(game.renderer);
 	SDL_DestroyWindow(game.window);
 	SDL_Quit();
