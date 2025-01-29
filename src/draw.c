@@ -1,5 +1,4 @@
 #include "draw.h"
-#include "common.h"
 
 void render(struct Game *game, struct GameAssets *gameAssets, struct PlayerStruct *player,
 			struct PipeStruct *pipe1, struct PipeStruct *pipe2) {
