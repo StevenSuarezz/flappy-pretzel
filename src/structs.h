@@ -34,9 +34,15 @@ struct AudioAssets {
 	Mix_Chunk *pretzelSFX4;
 };
 
+struct ScoreText {
+	SDL_Texture *scoreTexture;
+	SDL_Rect scorePositionRect;
+};
+
 struct GameAssets {
 	SDL_Texture *backgroundTexture;
 	struct AudioAssets audioAssets;
+	struct ScoreText scoreText;
 };
 
 struct Game {

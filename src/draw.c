@@ -21,6 +21,9 @@ void render(struct Game *game, struct GameAssets *gameAssets, struct PlayerStruc
 
 		drawDebugRects(game->renderer, player, pipe1, pipe2);
 
+		// Render score
+		SDL_RenderCopy(game->renderer, gameAssets->scoreText.scoreTexture, NULL, &gameAssets->scoreText.scorePositionRect);
+
 		SDL_RenderPresent(game->renderer);
 		break;
 	case PAUSED:

@@ -10,6 +10,7 @@
 #include "draw.h"
 #include "init.h"
 #include "input.h"
+#include "text.h"
 #include "update.h"
 #include "util.h"
 
@@ -53,6 +54,11 @@ int main(int argc, char *args[]) {
 
 	if (initAudioAssets(&gameAssets) < 0) {
 		printf("Failed to initialize game assets struct\n");
+		return -1;
+	}
+
+	if (initText(game.renderer, &gameAssets.scoreText) < 0) {
+		printf("Failed to initialize text assets\n");
 		return -1;
 	}
 

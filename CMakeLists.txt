@@ -14,6 +14,7 @@ find_package(SDL2_ttf REQUIRED)
 add_executable(game 
     src/main.c
     src/audio.c
+    src/text.c
     src/draw.c
     src/init.c
     src/input.c
