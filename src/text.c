@@ -18,3 +18,6 @@ int initText(SDL_Renderer *renderer, struct ScoreText *scoreText) {
 	// TODO: Implement return proper return values for error handling
 	return 0;
 }
+
+void updateText(SDL_Renderer *renderer, struct ScoreText *scoreText, uint score) {
+}

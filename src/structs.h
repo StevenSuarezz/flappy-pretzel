@@ -49,7 +49,7 @@ struct Game {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 	State state;
-	int score;
+	uint score;
 	bool isRunning;
 	bool isPaused;
 };
