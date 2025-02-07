@@ -1,4 +1,5 @@
 #include "update.h"
+#include "text.h"
 #include "util.h"
 
 void update(struct Game *game, struct GameAssets *gameAssets, struct PlayerStruct *player,
@@ -31,6 +32,7 @@ void update(struct Game *game, struct GameAssets *gameAssets, struct PlayerStruc
 		updatePipeStructs(pipe1, pipe2);
 
 		updateScore(game, player, pipe1, pipe2);
+		setScoreText(game->renderer, &gameAssets->scoreText, game->score);
 	}
 }
 

@@ -6,7 +6,7 @@
 static const SDL_Color colorWhite = {255, 255, 255};
 
 static char scoreString[32];
-int initText(SDL_Renderer *renderer, struct ScoreText *scoreText);
-void updateText(SDL_Renderer *renderer, struct ScoreText *scoreText, uint score);
+int initScoreText(SDL_Renderer *renderer, struct ScoreText *scoreText);
+void setScoreText(SDL_Renderer *renderer, struct ScoreText *scoreText, uint score);
 
 #endif

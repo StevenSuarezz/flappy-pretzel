@@ -57,7 +57,7 @@ int main(int argc, char *args[]) {
 		return -1;
 	}
 
-	if (initText(game.renderer, &gameAssets.scoreText) < 0) {
+	if (initScoreText(game.renderer, &gameAssets.scoreText) < 0) {
 		printf("Failed to initialize text assets\n");
 		return -1;
 	}
